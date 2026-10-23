@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento | Barbearia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Minha Barbearia</h1>
+        <p>Agendamento online</p>
+    </header>
+    <main>
+        <section class="agendamento">
+            <h2>Agende seu horário</h2>
+            <p>Escolha o dia e o horário do seu corte.</p>
+            <div class="calendario">
+                <h3>Selecione a data</h3>
+                <div class="navegacao-calendario">
+                    <button type="button" id="mesAnterior">&lt;</button>
+                    <h3 id="mesAtual"></h3>
+                    <button type="button" id="proximoMes">&gt;</button>
+                </div>
+                <div class="dias-semana">
+                    <span>DOM</span>
+                    <span>SEG</span>
+                    <span>TER</span>
+                    <span>QUA</span>
+                    <span>QUI</span>
+                    <span>SEX</span>
+                    <span>SÁB</span>
+                </div>
+                <div class="dias" id="diasCalendario"></div>
+                <p style="color:#ff6b6b;font-size:12px;margin-top:10px;text-align:center;">* Fechado aos domingos</p>
+            </div>
+            <div class="area-horarios">
+                <h3 id="dataSelecionada">Selecione uma data no calendário</h3>
+                <h3>Selecione um horário</h3>
+                <p class="disponibilidade">Escolha um horário livre</p>
+                <div class="lista-horarios">
+                    <button type="button" class="livre">08:20</button>
+                    <button type="button" class="livre">09:00</button>
+                    <button type="button" class="livre">09:40</button>
+                    <button type="button" class="livre">10:20</button>
+                    <button type="button" class="livre">11:00</button>
+                    <button type="button" class="livre">11:40</button>
+                    <button type="button" class="livre">12:20</button>
+                    <button type="button" class="livre">13:00</button>
+                    <button type="button" class="livre">13:40</button>
+                    <button type="button" class="livre">14:20</button>
+                    <button type="button" class="livre">15:00</button>
+                    <button type="button" class="livre">15:40</button>
+                    <button type="button" class="livre">16:20</button>
+                    <button type="button" class="livre">17:00</button>
+                    <button type="button" class="livre">17:40</button>
+                    <button type="button" class="livre">18:20</button>
+                    <button type="button" class="livre">19:00</button>
+                    <button type="button" class="livre">19:40</button>
+                    <button type="button" class="livre">20:20</button>
+                    <button type="button" class="livre">21:00</button>
+                    <button type="button" class="livre">21:40</button>
+                </div>
+                <div class="area-servicos">
+                    <h3>Selecione o serviço</h3>
+                    <button type="button" class="servico"><span>Corte</span><span>R$ 35,00</span></button>
+                    <button type="button" class="servico"><span>Barba</span><span>R$ 25,00</span></button>
+                    <button type="button" class="servico"><span>Sobrancelha</span><span>R$ 10,00</span></button>
+                    <button type="button" class="servico"><span>Corte + Barba</span><span>R$ 55,00</span></button>
+                    <button type="button" class="servico"><span>Corte + Sobrancelha</span><span>R$ 40,00</span></button>
+                    <button type="button" class="servico"><span>Luzes</span><span>A partir de R$ 80,00</span></button>
+                </div>
+                <div class="area-dados">
+                    <h3>Seus dados</h3>
+                    <label for="nomeCliente">Nome *</label>
+                    <input type="text" id="nomeCliente" placeholder="Ex: Pietro" required>
+                    <label for="sobrenomeCliente">Sobrenome *</label>
+                    <input type="text" id="sobrenomeCliente" placeholder="Ex: Silva" required>
+                    <label for="whatsappCliente">Telefone (WhatsApp) *</label>
+                    <input type="tel" id="whatsappCliente" placeholder="(11) 91234-5678" required>
+                </div>
+                <button type="button" id="confirmarAgendamento">Confirmar agendamento</button>
+            </div>
+        </section>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>

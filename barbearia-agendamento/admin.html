@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Barbeiro</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif; }
+body { background:#080b16; color:#f1f3f8; padding:20px; }
+.painel { max-width:500px; margin:0 auto; background:#111827; border:1px solid #252b3b; border-radius:16px; padding:20px; }
+h1 { font-size:22px; margin-bottom:5px; }
+.sub { color:#8995aa; margin-bottom:20px; font-size:14px; }
+label { display:block; margin:15px 0 5px; color:#8995aa; font-weight:bold; }
+input[type="date"] { width:100%; padding:15px; background:#192338; color:#fff; border:2px solid #303b54; border-radius:12px; font-size:16px; }
+.horarios { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:15px; }
+.horarios button { padding:12px; border-radius:10px; border:1px solid #9b4c1b; background:#302019; color:#f0782d; font-weight:bold; cursor:pointer; }
+.horarios button.bloqueado { background:#f0782d; color:#fff; border-color:#f0782d; text-decoration: line-through; }
+.acoes { margin-top:25px; display:flex; flex-direction:column; gap:10px; }
+.acoes button { padding:16px; border-radius:12px; border:none; font-weight:bold; font-size:15px; cursor:pointer; }
+#liberarSemana { background:#22c55e; color:#fff; }
+#limparDia { background:#192338; color:#fff; border:1px solid #303b54; }
+#status { margin-top:15px; text-align:center; color:#22c55e; font-size:14px; min-height:18px; }
+.box-agenda { margin-top:25px; border-top:1px solid #252b3b; padding-top:15px; }
+.item-ag { display:flex; justify-content:space-between; align-items:center; background:#192338; padding:10px 12px; border-radius:10px; border:1px solid #303b54; margin-bottom:8px; }
+</style>
+</head>
+<body>
+<div class="painel">
+<h1>Painel do Barbeiro</h1>
+<p class="sub">Bloqueie horários, libere semana e desmarque clientes</p>
+<label>Escolha o dia:</label>
+<input type="date" id="dataAdmin">
+<div class="horarios" id="listaHorariosAdmin"></div>
+<div class="acoes">
+<button id="liberarSemana">✓ Liberar Próxima Semana (+7 dias)</button>
+<button id="limparDia">Limpar bloqueios deste dia</button>
+<p id="status"></p>
+</div>
+<div class="box-agenda">
+<h3 style="font-size:16px; margin-bottom:10px;">Agendamentos: <span id="diaSelecionado" style="color:#f0782d;"></span></h3>
+<div id="listaAgendamentos"></div>
+</div>
+<div style="margin-top:20px; padding:15px; background:#0e1627; border-radius:12px; font-size:13px; color:#8995aa;">
+<p>Agenda liberada até: <span id="infoAgenda" style="color:#f0782d; font-weight:bold;">-</span></p>
+<p style="margin-top:5px;">Link cliente: <a href="index.html" target="_blank" style="color:#22c55e;">index.html</a></p>
+</div>
+</div>
+<script>
+const dataAdmin = document.getElementById("dataAdmin");
+const listaHorariosAdmin = document.getElementById("listaHorariosAdmin");
+const listaAgendamentos = document.getElementById("listaAgendamentos");
+const status = document.getElementById("status");
+const infoAgenda = document.getElementById("infoAgenda");
+const diaSelecionado = document.getElementById("diaSelecionado");
+const horariosFixos = ["08:20","09:00","09:40","10:20","11:00","11:40","12:20","13:00","13:40","14:20","15:00","15:40","16:20","17:00","17:40","18:20","19:00","19:40","20:20","21:00","21:40"];
+const hoje = new Date();
+dataAdmin.valueAsDate = hoje;
+function getBloqueios(){ return JSON.parse(localStorage.getItem("horariosBloqueados") || "{}"); }
+function salvarBloqueios(obj){ localStorage.setItem("horariosBloqueados", JSON.stringify(obj)); }
+function getAgendaLiberadaAte(){
+  const salvo = localStorage.getItem("agendaLiberadaAte");
+  if(salvo) return new Date(salvo);
+  const d = new Date(); d.setDate(d.getDate() + (6 - d.getDay())); return d;
+}
+function atualizarInfoAgenda(){
+  const limite = getAgendaLiberadaAte();
+  infoAgenda.textContent = limite.toLocaleDateString("pt-BR");
+}
+function renderHorarios(){
+  listaHorariosAdmin.innerHTML = "";
+  const data = dataAdmin.value;
+  if(!data) return;
+  diaSelecionado.textContent = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR');
+  const bloqueios = getBloqueios();
+  const bloqueadosDoDia = bloqueios[data] || [];
+  horariosFixos.forEach(hora => {
+    const btn = document.createElement("button");
+    btn.textContent = hora;
+    if(bloqueadosDoDia.includes(hora)) btn.classList.add("bloqueado");
+    btn.addEventListener("click", () => {
+      let todos = getBloqueios();
+      if(!todos[data]) todos[data] = [];
+      if(todos[data].includes(hora)) todos[data] = todos[data].filter(h => h !== hora);
+      else todos[data].push(hora);
+      if(todos[data].length === 0) delete todos[data];
+      salvarBloqueios(todos);
+      renderHorarios();
+    });
+    listaHorariosAdmin.appendChild(btn);
+  });
+  renderAgendamentos();
+  atualizarInfoAgenda();
+}
+function renderAgendamentos(){
+  const data = dataAdmin.value;
+  const agendamentos = JSON.parse(localStorage.getItem("agendamentos") || "[]");
+  const doDia = agendamentos.filter(a => a.data === data);
+  if(doDia.length === 0){
+    listaAgendamentos.innerHTML = `<p style="color:#8995aa; font-size:13px;">Nenhum agendamento neste dia</p>`;
+    return;
+  }
+  listaAgendamentos.innerHTML = "";
+  doDia.forEach(ag => {
+    const div = document.createElement("div");
+    div.className = "item-ag";
+    div.innerHTML = `
+      <div>
+        <b style="color:#f0782d;">${ag.hora}</b> - ${ag.nome}
+        <span style="color:#8995aa; font-size:12px;"> (${ag.servico})</span>
+        <br><small style="color:#8995aa;">${ag.telefone}</small>
+      </div>
+      <button onclick="desmarcar('${ag.hora}')" style="background:#dc2626; color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:bold;">X</button>
+    `;
+    listaAgendamentos.appendChild(div);
+  });
+}
+window.desmarcar = function(hora){
+  if(!confirm(`Desmarcar ${hora}?`)) return;
+  const data = dataAdmin.value;
+  let lista = JSON.parse(localStorage.getItem("agendamentos") || "[]");
+  lista = lista.filter(a => !(a.data === data && a.hora === hora));
+  localStorage.setItem("agendamentos", JSON.stringify(lista));
+  status.textContent = `Horário ${hora} liberado!`;
+  renderHorarios();
+}
+dataAdmin.addEventListener("change", renderHorarios);
+document.getElementById("liberarSemana").addEventListener("click", () => {
+  let liberadoAte = localStorage.getItem("agendaLiberadaAte");
+  let dataBase = liberadoAte ? new Date(liberadoAte) : new Date();
+  dataBase.setDate(dataBase.getDate() + 7);
+  dataBase.setHours(23,59,59,999);
+  localStorage.setItem("agendaLiberadaAte", dataBase.toISOString());
+  status.textContent = `Agenda liberada até ${dataBase.toLocaleDateString("pt-BR")}!`;
+  atualizarInfoAgenda();
+});
+document.getElementById("limparDia").addEventListener("click", () => {
+  const data = dataAdmin.value;
+  if(!data) return;
+  let todos = getBloqueios();
+  delete todos[data];
+  salvarBloqueios(todos);
+  renderHorarios();
+  status.textContent = `Bloqueios do dia ${data} removidos!`;
+});
+renderHorarios();
+</script>
+</body>
+</html>
